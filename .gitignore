@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.python-version
+
+
+# Virtual environments
+venv/
+.env
+
+# IDEs
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Node
+node_modules/
+.next/
+
+# OS files
+Thumbs.db
