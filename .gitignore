@@ -27,3 +27,9 @@ node_modules/
 
 # OS files
 Thumbs.db
+
+#Chroma
+backend/chroma_db/
+
+#Uploads
+backend/uploads/
