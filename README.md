@@ -57,23 +57,23 @@ Next.js Dashboard with Agent Timeline
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Next.js Frontend                      │
-│              (Vercel · TypeScript · Tailwind CSS)            │
+│                        Next.js Frontend                     │
+│              (Vercel · TypeScript · Tailwind CSS)           │
 └──────────────────────────┬──────────────────────────────────┘
                            │ REST API
 ┌──────────────────────────▼──────────────────────────────────┐
-│                       FastAPI Backend                        │
-│               (Docker · GCP Cloud Run · Python)              │
-│                                                              │
-│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │  Ingestion  │  │  LangGraph   │  │  Report Engine   │   │
-│  │  Pipeline   │  │  5 Agents    │  │  PDF + Scoring   │   │
-│  └──────┬──────┘  └──────┬───────┘  └──────────────────┘   │
-│         │                │                                   │
-│  ┌──────▼──────┐  ┌──────▼───────┐  ┌──────────────────┐   │
+│                       FastAPI Backend                       │
+│               (Docker · GCP Cloud Run · Python)             │
+│                                                             │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐    │
+│  │  Ingestion  │  │  LangGraph   │  │  Report Engine   │    │
+│  │  Pipeline   │  │  5 Agents    │  │  PDF + Scoring   │    │
+│  └──────┬──────┘  └──────┬───────┘  └──────────────────┘    │
+│         │                │                                  │
+│  ┌──────▼──────┐  ┌──────▼───────┐  ┌──────────────────┐    │
 │  │  ChromaDB   │  │  Groq LLM    │  │   PostgreSQL      │   │
 │  │  (RAG)      │  │  Llama 3.3   │  │   (Jobs/Reports)  │   │
-│  └─────────────┘  └──────────────┘  └──────────────────┘   │
+│  └─────────────┘  └──────────────┘  └──────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -93,8 +93,8 @@ Next.js Dashboard with Agent Timeline
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/code-review-platform.git
-cd code-review-platform
+git clone https://github.com/YOUR_USERNAME/codesentinel.git
+cd codesentinel
 ```
 
 ---
