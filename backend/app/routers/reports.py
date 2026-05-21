@@ -1,6 +1,6 @@
 import uuid
 import os
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -11,7 +11,9 @@ from typing import Optional
 from app.database import get_db
 from app.models.job import Report
 from app.utils.auth import verify_token
+from app.config import get_settings
 
+settings = get_settings()
 router = APIRouter(prefix="/api", tags=["reports"])
 
 
@@ -25,6 +27,7 @@ class ReportResponse(BaseModel):
     final_review: Optional[dict]
     severity_score: Optional[int]
     confidence_score: Optional[int]
+    pdf_ready: bool
     created_at: datetime
 
     class Config:
@@ -37,7 +40,6 @@ async def get_report(
     db: AsyncSession = Depends(get_db),
     _user: str = Depends(verify_token),
 ):
-    """Fetch the full structured report for a completed job."""
     try:
         uid = uuid.UUID(report_id)
     except ValueError:
@@ -59,6 +61,7 @@ async def get_report(
         final_review=report.final_review,
         severity_score=report.severity_score,
         confidence_score=report.confidence_score,
+        pdf_ready=bool(report.pdf_path and os.path.exists(report.pdf_path)),
         created_at=report.created_at,
     )
 
@@ -69,7 +72,7 @@ async def download_report_pdf(
     db: AsyncSession = Depends(get_db),
     _user: str = Depends(verify_token),
 ):
-    """Download the generated PDF report."""
+    """Download the generated PDF. Auth via Bearer header or ?token= query param."""
     try:
         uid = uuid.UUID(report_id)
     except ValueError:
@@ -82,10 +85,11 @@ async def download_report_pdf(
         raise HTTPException(status_code=404, detail="Report not found")
 
     if not report.pdf_path or not os.path.exists(report.pdf_path):
-        raise HTTPException(status_code=404, detail="PDF not yet generated")
+        raise HTTPException(status_code=404,
+            detail="PDF not yet generated. Wait for job to complete.")
 
     return FileResponse(
         path=report.pdf_path,
         media_type="application/pdf",
-        filename=f"report_{report_id[:8]}.pdf",
+        filename=f"code-review-{str(report_id)[:8]}.pdf",
     )
