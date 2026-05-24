@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="AI Code Review Platform",
+    title="Code Sentinel",
     description="Multi-agent autonomous code review and security intelligence",
     version="1.0.0",
     lifespan=lifespan,
