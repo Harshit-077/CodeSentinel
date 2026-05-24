@@ -110,7 +110,15 @@ Return ONLY valid JSON in this exact schema:
             )
 
             logger.info("DocsAgent complete", job_id=job_id, grade=result.get("overall_documentation_grade"))
-            return {"docs_suggestions": result}
+            
+            existing_contexts = state.get("retrieved_contexts") or {}
+            return {
+                "docs_suggestions": result,
+                "retrieved_contexts": {
+                    **existing_contexts,
+                    "docs": [readme_ctx, public_api_ctx, docstring_ctx],
+                },
+            }
 
         except Exception as e:
             error_msg = f"DocsAgent failed: {str(e)}"
