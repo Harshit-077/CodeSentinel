@@ -23,10 +23,15 @@ const AGENT_ORDER = [
 ];
 
 function StatusIcon({ status }: { status: string }) {
-  if (status === "done")    return <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />;
-  if (status === "failed")  return <XCircle className="w-4 h-4 text-red-400 shrink-0" />;
-  if (status === "started") return <Loader2 className="w-4 h-4 text-brand-400 animate-spin shrink-0" />;
-  return <Clock className="w-4 h-4 text-gray-600 shrink-0" />;
+  if (status === "done")    return <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 drop-shadow-sm" />;
+  if (status === "failed")  return <XCircle className="w-5 h-5 text-red-400 shrink-0 drop-shadow-sm" />;
+  if (status === "started") return (
+    <div className="relative flex items-center justify-center w-5 h-5 shrink-0">
+      <Loader2 className="w-5 h-5 text-brand-400 animate-spin relative z-10" />
+      <div className="absolute inset-0 bg-brand-500 rounded-full blur-[4px] animate-pulse-glow" />
+    </div>
+  );
+  return <Clock className="w-5 h-5 text-gray-700 shrink-0" />;
 }
 
 function statusColor(status: string) {

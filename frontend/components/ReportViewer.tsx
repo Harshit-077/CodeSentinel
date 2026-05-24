@@ -3,9 +3,14 @@
 import { useState } from "react";
 import { type Report } from "@/lib/api";
 import { SeverityBadge } from "./SeverityBadge";
+import { EvaluationPanel } from "./EvaluationPanel";
 import {
   Bug, Shield, BookOpen, Star,
+<<<<<<< HEAD
+  AlertTriangle, CheckCircle2, TrendingUp, FileText, FlaskConical,
+=======
   AlertTriangle, CheckCircle2, TrendingUp,
+>>>>>>> 8323db3e7cc4c2ac2de0a792685aae25f1be5dfe
 } from "lucide-react";
 
 interface Props { report: Report }
@@ -16,6 +21,7 @@ const TABS = [
   { key: "security",  label: "Security",     icon: Shield },
   { key: "docs",      label: "Docs",         icon: BookOpen },
   { key: "actions",   label: "Action Items", icon: TrendingUp },
+  { key: "evaluation", label: "Evaluation",  icon: FlaskConical },
 ] as const;
 
 type Tab = typeof TABS[number]["key"];
@@ -63,27 +69,32 @@ export function ReportViewer({ report }: Props) {
         </div>
       </div>
 
+<<<<<<< HEAD
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 p-1 bg-gray-900/60 rounded-xl overflow-x-auto border border-gray-700/50 backdrop-blur-sm w-fit shadow-inner shadow-black/20">
+=======
       {/* ── Tabs ── */}
       <div className="flex gap-1 mb-5 overflow-x-auto">
+>>>>>>> 8323db3e7cc4c2ac2de0a792685aae25f1be5dfe
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
-                        font-medium whitespace-nowrap transition-colors duration-150
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm
+                        font-semibold whitespace-nowrap transition-all duration-300
                         ${tab === key
-                          ? "bg-brand-500/20 text-brand-400 border border-brand-500/30"
-                          : "text-gray-500 hover:text-gray-300"}`}
+                          ? "bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/20"
+                          : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/50"}`}
           >
-            <Icon className="w-3.5 h-3.5" />
+            <Icon className="w-4 h-4" />
             {label}
             {key === "bugs" && (
-              <span className="ml-1 bg-orange-500/20 text-orange-400 text-xs px-1.5 rounded-full">
+              <span className={`ml-1 text-[11px] px-1.5 rounded-full ${tab === key ? "bg-white/20 text-white" : "bg-orange-500/20 text-orange-400"}`}>
                 {report.bugs?.total_issues ?? 0}
               </span>
             )}
             {key === "security" && (
-              <span className="ml-1 bg-red-500/20 text-red-400 text-xs px-1.5 rounded-full">
+              <span className={`ml-1 text-[11px] px-1.5 rounded-full ${tab === key ? "bg-white/20 text-white" : "bg-red-500/20 text-red-400"}`}>
                 {report.security_issues?.total_vulnerabilities ?? 0}
               </span>
             )}
@@ -306,6 +317,11 @@ export function ReportViewer({ report }: Props) {
               </div>
             ))}
         </div>
+      )}
+
+      {/* ── Evaluation Tab ── */}
+      {tab === "evaluation" && (
+        <EvaluationPanel jobId={report.job_id} />
       )}
     </div>
   );

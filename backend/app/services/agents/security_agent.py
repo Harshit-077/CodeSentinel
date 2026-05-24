@@ -138,7 +138,15 @@ Return ONLY valid JSON in this exact schema:
             )
 
             logger.info("SecurityAgent complete", job_id=job_id, vulns=vuln_count)
-            return {"security_issues": result}
+            
+            existing_contexts = state.get("retrieved_contexts") or {}
+            return {
+                "security_issues": result,
+                "retrieved_contexts": {
+                    **existing_contexts,
+                    "security": [auth_ctx, db_ctx, secrets_ctx, input_ctx, config_ctx],
+                },
+            }
 
         except Exception as e:
             error_msg = f"SecurityAgent failed: {str(e)}"

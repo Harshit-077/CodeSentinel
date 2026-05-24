@@ -41,3 +41,9 @@ class AgentState(TypedDict):
 
     # ── Error tracking ────────────────────────────────────────────────────────
     errors: list[str]                       # non-fatal agent errors accumulate here
+
+    # ── RAG context store (for RAGAS evaluation) ──────────────────────────────
+    # Each agent appends its retrieved code chunks here keyed by short name.
+    # Keys: "repo", "bug", "security", "docs"
+    # Values: list of raw code chunk strings retrieved from ChromaDB
+    retrieved_contexts: Optional[dict]      # {"repo": [...], "bug": [...], ...}
