@@ -25,6 +25,13 @@ class Base(DeclarativeBase):
     pass
 
 
+# ── Model imports — must be below Base so metadata is populated ───────────────
+# These imports are intentional; they register models with Base.metadata so
+# create_tables() creates all tables on startup.
+from app.models import job        # noqa: F401, E402  (Job, Report, AgentLog)
+from app.models import evaluation_model  # noqa: F401, E402  (EvaluationResult)
+
+
 # Dependency — inject into FastAPI routes
 async def get_db() -> AsyncSession:
     async with AsyncSessionLocal() as session:

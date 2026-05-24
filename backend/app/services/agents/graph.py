@@ -137,6 +137,22 @@ async def _save_report(db: AsyncSession, job_id: str, final_state: AgentState) -
         report.pdf_path = pdf_path
         await db.commit()
 
+    # ── Run RAGAS + DeepEval evaluation automatically ─────────────────────────
+    try:
+        from app.services.report.eval_runner import run_eval_for_report
+        eval_results = await run_eval_for_report(
+            job_id=job_id,
+            report_id=str(report.id),
+        )
+        # Cache eval results inside final_review JSONB
+        final_review = report.final_review or {}
+        final_review["eval_results"] = eval_results
+        report.final_review = {**final_review}
+        await db.commit()
+        logger.info("Eval results cached", report_id=str(report.id))
+    except Exception as e:
+        logger.error("Eval runner failed (non-fatal)", error=str(e))
+
     logger.info("Report saved",
         job_id=job_id,
         report_id=str(report.id),

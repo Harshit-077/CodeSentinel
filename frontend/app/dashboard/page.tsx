@@ -8,8 +8,10 @@ import { UploadForm } from "@/components/UploadForm";
 import { AgentTimeline } from "@/components/AgentTimeline";
 import { ReportViewer } from "@/components/ReportViewer";
 import { DownloadButton } from "@/components/DownloadButton";
+import RagasPanel from "@/components/RagasPanel";
 
 type Stage = "idle" | "polling" | "done" | "failed";
+type RightTab = "report" | "evaluation";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function DashboardPage() {
   const [jobId, setJobId]       = useState<string | null>(null);
   const [reportId, setReportId] = useState<string | null>(null);
   const [report, setReport]     = useState<Report | null>(null);
+  const [rightTab, setRightTab] = useState<RightTab>("report");
 
   // Auth guard
   useEffect(() => {
@@ -28,6 +31,7 @@ export default function DashboardPage() {
     setStage("polling");
     setReport(null);
     setReportId(null);
+    setRightTab("report");
   }
 
   async function handleComplete(rid: string) {
@@ -159,10 +163,30 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Right column — report */}
-          {stage === "done" && report && (
-            <div className="animate-fade-in">
-              <ReportViewer report={report} />
+          {/* Right column — tabbed: report / evaluation */}
+          {stage === "done" && report && jobId && (
+            <div className="animate-fade-in space-y-4">
+              {/* Tab bar */}
+              <div className="flex gap-1 rounded-lg bg-gray-900 border border-gray-800 p-1 w-fit">
+                {(["report", "evaluation"] as RightTab[]).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setRightTab(tab)}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
+                      rightTab === tab
+                        ? "bg-brand-500 text-white shadow"
+                        : "text-gray-400 hover:text-gray-200"
+                    }`}
+                  >
+                    {tab === "evaluation" ? "RAG Evaluation" : "Report"}
+                  </button>
+                ))}
+              </div>
+
+              {rightTab === "report" && <ReportViewer report={report} />}
+              {rightTab === "evaluation" && (
+                <RagasPanel jobId={jobId} jobStatus="done" />
+              )}
             </div>
           )}
 
