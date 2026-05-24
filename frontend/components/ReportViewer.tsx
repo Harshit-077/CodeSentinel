@@ -5,16 +5,16 @@ import { type Report } from "@/lib/api";
 import { SeverityBadge } from "./SeverityBadge";
 import {
   Bug, Shield, BookOpen, Star,
-  AlertTriangle, CheckCircle2, TrendingUp, FileText,
+  AlertTriangle, CheckCircle2, TrendingUp,
 } from "lucide-react";
 
 interface Props { report: Report }
 
 const TABS = [
-  { key: "overview",  label: "Overview",  icon: Star },
-  { key: "bugs",      label: "Bugs",      icon: Bug },
-  { key: "security",  label: "Security",  icon: Shield },
-  { key: "docs",      label: "Docs",      icon: BookOpen },
+  { key: "overview",  label: "Overview",     icon: Star },
+  { key: "bugs",      label: "Bugs",         icon: Bug },
+  { key: "security",  label: "Security",     icon: Shield },
+  { key: "docs",      label: "Docs",         icon: BookOpen },
   { key: "actions",   label: "Action Items", icon: TrendingUp },
 ] as const;
 
@@ -31,12 +31,14 @@ function ScoreRing({ score, label, color }: { score: number; label: string; colo
 
 export function ReportViewer({ report }: Props) {
   const [tab, setTab] = useState<Tab>("overview");
-  const fr = report.final_review ?? {};
-  const metrics = fr.metrics_summary ?? {};
+  const fr      = report.final_review ?? {};
+  const metrics = fr.metrics_summary  ?? {};
+  const rid     = report.id;
 
   return (
     <div className="card animate-fade-in">
-      {/* Score header */}
+
+      {/* ── Score header ── */}
       <div className="flex items-center justify-between mb-6 pb-5 border-b border-gray-800">
         <div>
           <h2 className="text-xl font-bold">
@@ -56,20 +58,12 @@ export function ReportViewer({ report }: Props) {
               (report.severity_score ?? 0) > 40 ? "text-yellow-400" : "text-green-400"
             }
           />
-          <ScoreRing
-            score={report.confidence_score ?? 0}
-            label="Confidence"
-            color="text-brand-400"
-          />
-          <ScoreRing
-            score={metrics.overall_health_score ?? 0}
-            label="Health"
-            color="text-emerald-400"
-          />
+          <ScoreRing score={report.confidence_score ?? 0} label="Confidence" color="text-brand-400" />
+          <ScoreRing score={metrics.overall_health_score ?? 0} label="Health" color="text-emerald-400" />
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* ── Tabs ── */}
       <div className="flex gap-1 mb-5 overflow-x-auto">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
@@ -97,13 +91,11 @@ export function ReportViewer({ report }: Props) {
         ))}
       </div>
 
-      {/* ── Overview Tab ── */}
+      {/* ══════════════════════════════════════════════
+          OVERVIEW TAB
+      ══════════════════════════════════════════════ */}
       {tab === "overview" && (
         <div className="space-y-5 animate-fade-in">
-          <div className="bg-gray-800/50 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-gray-300 mb-2">Executive Summary</h3>
-            <p className="text-sm text-gray-400 leading-relaxed">{fr.executive_summary}</p>
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-800/50 rounded-xl p-4">
@@ -142,27 +134,38 @@ export function ReportViewer({ report }: Props) {
         </div>
       )}
 
-      {/* ── Bugs Tab ── */}
+      {/* ══════════════════════════════════════════════
+          BUGS TAB
+      ══════════════════════════════════════════════ */}
       {tab === "bugs" && (
         <div className="space-y-3 animate-fade-in">
           <div className="flex gap-4 text-sm text-gray-500 mb-2">
             <span>Quality: <strong className="text-gray-300">{report.bugs?.overall_code_quality}</strong></span>
             <span>Anti-patterns: <strong className="text-gray-300">{report.bugs?.anti_patterns_detected?.length ?? 0}</strong></span>
           </div>
+
           {(report.bugs?.issues ?? []).map((bug) => (
             <div key={bug.id} className="bg-gray-800/50 rounded-xl p-4 space-y-2">
+              {/* Header row */}
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-semibold text-gray-200">{bug.title}</span>
-                <SeverityBadge severity={bug.severity} />
+                <div className="flex items-center gap-2">
+                  <SeverityBadge severity={bug.severity} />
+                </div>
               </div>
+
               <p className="text-xs text-gray-500 font-mono">{bug.file}</p>
               <p className="text-sm text-gray-400">{bug.description}</p>
+
               {bug.code_snippet && (
-                <pre className="text-xs bg-gray-900 rounded-lg p-3 overflow-x-auto text-gray-300 border border-gray-700">
+                <pre className="text-xs bg-gray-900 rounded-lg p-3 overflow-x-auto
+                                text-gray-300 border border-gray-700">
                   {bug.code_snippet}
                 </pre>
               )}
-              <div className="text-xs text-green-400 bg-green-500/10 rounded-lg p-2.5 border border-green-500/20">
+
+              <div className="text-xs text-green-400 bg-green-500/10 rounded-lg p-2.5
+                              border border-green-500/20">
                 💡 {bug.suggested_fix}
               </div>
             </div>
@@ -173,7 +176,9 @@ export function ReportViewer({ report }: Props) {
         </div>
       )}
 
-      {/* ── Security Tab ── */}
+      {/* ══════════════════════════════════════════════
+          SECURITY TAB
+      ══════════════════════════════════════════════ */}
       {tab === "security" && (
         <div className="space-y-3 animate-fade-in">
           <div className="flex gap-4 text-sm mb-2">
@@ -188,11 +193,13 @@ export function ReportViewer({ report }: Props) {
               </span>
             ))}
           </div>
+
           {(report.security_issues?.vulnerabilities ?? []).map((v) => (
             <div key={v.id} className="bg-gray-800/50 rounded-xl p-4 space-y-2">
+              {/* Header row */}
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-semibold text-gray-200">{v.title}</span>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <span className="badge bg-purple-500/20 text-purple-400 border border-purple-500/20">
                     {v.owasp_category}
                   </span>
@@ -203,11 +210,14 @@ export function ReportViewer({ report }: Props) {
               <p className="text-xs text-gray-500">{v.owasp_name} · {v.cwe_reference}</p>
               <p className="text-sm text-gray-400">{v.description}</p>
               {v.code_snippet && (
-                <pre className="text-xs bg-gray-900 rounded-lg p-3 overflow-x-auto text-gray-300 border border-gray-700">
+                <pre className="text-xs bg-gray-900 rounded-lg p-3 overflow-x-auto
+                                text-gray-300 border border-gray-700">
                   {v.code_snippet}
                 </pre>
               )}
-              <div className="text-xs text-green-400 bg-green-500/10 rounded-lg p-2.5 border border-green-500/20">
+
+              <div className="text-xs text-green-400 bg-green-500/10 rounded-lg p-2.5
+                              border border-green-500/20">
                 🔒 {v.remediation}
               </div>
             </div>
@@ -218,7 +228,9 @@ export function ReportViewer({ report }: Props) {
         </div>
       )}
 
-      {/* ── Docs Tab ── */}
+      {/* ══════════════════════════════════════════════
+          DOCS TAB
+      ══════════════════════════════════════════════ */}
       {tab === "docs" && (
         <div className="space-y-4 animate-fade-in">
           <div className="flex gap-6 items-center">
@@ -270,7 +282,9 @@ export function ReportViewer({ report }: Props) {
         </div>
       )}
 
-      {/* ── Action Items Tab ── */}
+      {/* ══════════════════════════════════════════════
+          ACTION ITEMS TAB
+      ══════════════════════════════════════════════ */}
       {tab === "actions" && (
         <div className="space-y-3 animate-fade-in">
           <p className="text-sm text-gray-500 mb-3">Sorted by priority — tackle these first</p>
