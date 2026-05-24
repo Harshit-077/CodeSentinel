@@ -49,7 +49,7 @@ class SecurityAgent(BaseAgent):
         try:
             retriever = Retriever(job_id=job_id)
             repo_summary = state.get("repo_summary", {})
-
+            SECURITY_QUERY = "authentication login password token SQL injection secret credential vulnerability"
             # Target security-sensitive code areas
             auth_ctx = retriever.retrieve(
                 "authentication login password token JWT session cookie auth middleware",
@@ -126,9 +126,22 @@ Return ONLY valid JSON in this exact schema:
   "overall_security_posture": "critical | poor | fair | good | excellent"
 }}"""
 
+            raw_chunks = retriever.retrieve_raw(SECURITY_QUERY, n_results=8)
+            context_texts = [c["content"] for c in raw_chunks]
+
             response = self.llm.invoke(prompt)
             result = extract_json(response.content)
 
+            # ── RAGAS eval collection ─────────────────────────
+            from app.services.evaluation.ragas_evaluator import AgentEvalInput
+            state["eval_inputs"].append(
+                AgentEvalInput(
+                    agent_name="security",
+                    question=SECURITY_QUERY,
+                    answer=response.content,
+                    contexts=context_texts,
+                )
+            )
             vuln_count = result.get("total_vulnerabilities", len(result.get("vulnerabilities", [])))
             await self._log(
                 db, job_id, "done",

@@ -142,10 +142,19 @@ Return ONLY valid JSON in this exact schema:
     "overall_health_score": number (0-100)
   }}
 }}"""
-
             response = self.llm.invoke(prompt)
             result = extract_json(response.content)
 
+            # ── RAGAS eval collection (no RAG context for reviewer) ───
+            from app.services.evaluation.ragas_evaluator import AgentEvalInput
+            state["eval_inputs"].append(
+                AgentEvalInput(
+                    agent_name="reviewer",
+                    question="Synthesise all agent outputs into a final engineering review report",
+                    answer=response.content,
+                    contexts=[],   # reviewer has no retrieval — skipped in RAGAS
+                )
+            )
             await self._log(
                 db, job_id, "done",
                 f"Report complete — severity: {severity_score}/100 — "

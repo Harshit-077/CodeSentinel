@@ -26,6 +26,14 @@ class Settings(BaseSettings):
     upload_dir: str = "./uploads"
     report_dir: str = "./reports"
 
+        # LangSmith tracing
+    langchain_tracing_v2: str = "false"
+    langchain_api_key: str = ""
+    langchain_project: str = "codesentinel"
+ 
+    # RAGAS evaluation
+    ragas_llm_model: str = "llama-3.3-70b-versatile"
+    
     # CORS
     frontend_url: str = "http://localhost:3000"
 

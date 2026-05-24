@@ -34,7 +34,7 @@ class DocsAgent(BaseAgent):
         try:
             retriever = Retriever(job_id=job_id)
             repo_summary = state.get("repo_summary", {})
-
+            DOCS_QUERY = "README docstring documentation function description param return API endpoint"
             readme_ctx = retriever.retrieve(
                 "README installation setup usage configuration getting started",
                 n_results=4,
@@ -98,10 +98,22 @@ Return ONLY valid JSON in this exact schema:
   "overall_documentation_grade": "A | B | C | D | F",
   "quick_wins": ["list of fast documentation improvements that would have high impact"]
 }}"""
+            raw_chunks = retriever.retrieve_raw(DOCS_QUERY, n_results=8)
+            context_texts = [c["content"] for c in raw_chunks]
 
             response = self.llm.invoke(prompt)
             result = extract_json(response.content)
 
+            # ── RAGAS eval collection ─────────────────────────
+            from app.services.evaluation.ragas_evaluator import AgentEvalInput
+            state["eval_inputs"].append(
+                AgentEvalInput(
+                    agent_name="docs",
+                    question=DOCS_QUERY,
+                    answer=response.content,
+                    contexts=context_texts,
+                )
+            )
             await self._log(
                 db, job_id, "done",
                 f"Documentation grade: {result.get('overall_documentation_grade', '?')} — "

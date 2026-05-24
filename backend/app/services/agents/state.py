@@ -40,4 +40,5 @@ class AgentState(TypedDict):
     confidence_score: Optional[int]         # 0–100
 
     # ── Error tracking ────────────────────────────────────────────────────────
-    errors: list[str]                       # non-fatal agent errors accumulate here
+    errors: list[str]  
+    eval_inputs: list                      # non-fatal agent errors accumulate here

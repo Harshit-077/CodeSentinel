@@ -1,0 +1,17 @@
+__pycache__
+*.pyc
+*.pyo
+.env
+.git
+.gitignore
+*.md
+uploads/
+reports/
+chroma_db/
+.pytest_cache
+*.egg-info
+dist/
+build/
+.venv
+venv/
+node_modules/

@@ -20,9 +20,15 @@ from app.database import AsyncSessionLocal
 from app.models.job import Job, Report
 from app.config import get_settings
 from app.utils.logger import get_logger
+from app.services.evaluation.ragas_evaluator import AgentEvalInput, run_ragas_evaluation
 
 logger = get_logger(__name__)
 settings = get_settings()
+
+# ── LangSmith tracing (must be set before graph compiles) ────
+os.environ["LANGCHAIN_TRACING_V2"] = settings.langchain_tracing_v2
+os.environ["LANGCHAIN_API_KEY"]    = settings.langchain_api_key
+os.environ["LANGCHAIN_PROJECT"]    = settings.langchain_project
 
 _repo_agent     = RepoAgent()
 _bug_agent      = BugAgent()
@@ -95,7 +101,7 @@ async def _generate_pdf_for_report(report: Report) -> str | None:
         return None
 
 
-async def _save_report(db: AsyncSession, job_id: str, final_state: AgentState) -> Report:
+async def _save_report(db: AsyncSession, job_id: str, final_state: AgentState, eval_scores: dict | None = None) -> Report:
     """Persist agent outputs + trigger PDF generation."""
     uid = uuid.UUID(job_id)
 
@@ -117,6 +123,7 @@ async def _save_report(db: AsyncSession, job_id: str, final_state: AgentState) -
         final_review=final_state.get("final_review"),
         severity_score=scoring.severity_score,
         confidence_score=scoring.confidence_score,
+        evaluation_scores=eval_scores,        # ← NEW
     )
     db.add(report)
     await db.flush()   # get report.id before PDF generation
@@ -167,25 +174,38 @@ async def run_pipeline(job_id: str):
             await db.commit()
 
             # ── Initial state ──────────────────────────────────────────────────
+            eval_inputs: list = []          # shared collector for RAGAS
+
             initial_state: AgentState = {
-                "job_id":           job_id,
-                "source_type":      job.source_type,
-                "source_ref":       job.source_ref,
+                "job_id":            job_id,
+                "source_type":       job.source_type,
+                "source_ref":        job.source_ref,
                 "structure_summary": structure_summary,
-                "repo_summary":     None,
-                "bugs":             None,
-                "security_issues":  None,
-                "docs_suggestions": None,
-                "final_review":     None,
-                "severity_score":   None,
-                "confidence_score": None,
-                "errors":           [],
+                "repo_summary":      None,
+                "bugs":              None,
+                "security_issues":   None,
+                "docs_suggestions":  None,
+                "final_review":      None,
+                "severity_score":    None,
+                "confidence_score":  None,
+                "errors":            [],
+                "eval_inputs":       eval_inputs,
             }
 
             # ── LangGraph ──────────────────────────────────────────────────────
             logger.info("Starting LangGraph pipeline", job_id=job_id)
             compiled_graph = build_graph(db)
-            final_state = await compiled_graph.ainvoke(initial_state)
+            final_state = await compiled_graph.ainvoke(
+                initial_state,
+                config={
+                    "run_name": f"codesentinel-job-{job_id}",
+                    "tags":     ["codesentinel", "code-review"],
+                    "metadata": {"job_id": job_id, "source_type": job.source_type},
+                },
+            )
+             # ── RAGAS evaluation ───────────────────────────────────────────────
+            eval_scores = await run_ragas_evaluation(job_id, eval_inputs)
+            logger.info("RAGAS evaluation complete", job_id=job_id, overall=eval_scores.get("overall"))
 
             # ── Save report + generate PDF ─────────────────────────────────────
             await _save_report(db, job_id, final_state)

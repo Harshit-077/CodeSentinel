@@ -63,7 +63,8 @@ class Report(Base):
 
     # PDF path on disk
     pdf_path: Mapped[str | None] = mapped_column(Text, nullable=True)
-
+    # RAGAS evaluation scores
+    evaluation_scores: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow
     )

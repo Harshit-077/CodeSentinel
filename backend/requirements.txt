@@ -34,3 +34,10 @@ aiofiles==24.1.0
 httpx==0.27.2
 tenacity==8.5.0
 structlog==24.4.0
+
+# model evaluation
+ragas==0.2.15
+langchain-groq
+langchain-community
+langsmith
+datasets

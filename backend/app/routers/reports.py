@@ -93,3 +93,66 @@ async def download_report_pdf(
         media_type="application/pdf",
         filename=f"code-review-{str(report_id)[:8]}.pdf",
     )
+
+
+ 
+@router.get("/reports/{report_id}/evaluation")
+async def get_evaluation_scores(
+    report_id: str,
+    _user: str = Depends(verify_token),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Returns RAGAS evaluation scores for a completed report.
+ 
+    Response shape:
+    {
+        "report_id": 42,
+        "job_id": 7,
+        "langsmith_url": "https://smith.langchain.com/...",
+        "evaluation": {
+            "per_agent": {
+                "bug":      {"faithfulness": 0.85, "answer_relevancy": 0.91, "context_precision": 0.78},
+                "security": {"faithfulness": 0.90, ...},
+                "docs":     {"faithfulness": 0.80, ...}
+            },
+            "overall":      {"faithfulness": 0.85, "answer_relevancy": 0.90, "context_precision": 0.78},
+            "sample_count": 3,
+            "error":        null
+        }
+    }
+    """
+    # Fetch the report
+    try:
+        uid = uuid.UUID(report_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid report ID format")
+
+    result = await db.execute(
+        select(Report).where(Report.id == uid)
+    )
+    report = result.scalar_one_or_none()
+ 
+    if report is None:
+        raise HTTPException(status_code=404, detail="Report not found")
+ 
+    if report.evaluation_scores is None:
+        raise HTTPException(
+            status_code=202,
+            detail="Evaluation scores not yet available. Pipeline may still be running.",
+        )
+ 
+    # Build LangSmith trace URL
+    # The run is named "codesentinel-job-{job_id}" in graph.py
+    langsmith_url = (
+        f"https://smith.langchain.com/projects/{settings.langchain_project}"
+        if settings.langchain_api_key
+        else None
+    )
+ 
+    return {
+        "report_id":     str(report.id),
+        "job_id":        str(report.job_id),
+        "langsmith_url": langsmith_url,
+        "evaluation":    report.evaluation_scores,
+    }

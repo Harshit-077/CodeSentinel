@@ -35,7 +35,8 @@ class BugAgent(BaseAgent):
             retriever = Retriever(job_id=job_id)
             repo_summary = state.get("repo_summary", {})
 
-            # Target bug-prone code patterns
+            BUG_QUERY = "try catch except error handling exception raise throw if else condition loop null undefined"
+
             error_handling_ctx = retriever.retrieve(
                 "try catch except error handling exception raise throw",
                 n_results=5,
@@ -52,6 +53,10 @@ class BugAgent(BaseAgent):
                 "async await promise callback threading race condition",
                 n_results=3,
             )
+
+            # For RAGAS — raw chunks from the primary query
+            raw_chunks = retriever.retrieve_raw(BUG_QUERY, n_results=8)
+            context_texts = [c["content"] for c in raw_chunks]
 
             prompt = f"""You are a senior software engineer specialising in bug detection and code quality.
 
@@ -100,6 +105,17 @@ Return ONLY valid JSON in this exact schema:
             response = self.llm.invoke(prompt)
             result = extract_json(response.content)
 
+            # ── RAGAS eval collection ─────────────────────────
+            from app.services.evaluation.ragas_evaluator import AgentEvalInput
+            state["eval_inputs"].append(
+                AgentEvalInput(
+                    agent_name="bug",
+                    question=BUG_QUERY,
+                    answer=response.content,
+                    contexts=context_texts,
+                )
+            )
+            
             issue_count = result.get("total_issues", len(result.get("issues", [])))
             await self._log(
                 db, job_id, "done",
