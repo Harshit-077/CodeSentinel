@@ -58,10 +58,16 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-gray-950 relative overflow-hidden">
+      {/* Background orbs for glassmorphism */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 fixed">
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-brand-600/10 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-0 -left-1/4 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px] animate-float" style={{ animationDelay: "3s" }} />
+      </div>
+
       {/* Navbar */}
-      <nav className="border-b border-gray-800 bg-gray-950/80 backdrop-blur sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <nav className="border-b border-gray-700/50 bg-gray-950/50 backdrop-blur-xl sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between relative">
           <div className="flex items-center gap-2.5">
             <Shield className="w-5 h-5 text-brand-500" />
             <span className="font-semibold text-gray-100">Code Sentinel</span>
@@ -87,14 +93,14 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-10 relative z-10">
         {/* ── Hero (idle only) ── */}
         {stage === "idle" && (
-          <div className="text-center mb-10 animate-fade-in">
-            <h1 className="text-4xl font-bold text-white mb-3">
+          <div className="text-center mb-12 animate-fade-in">
+            <h1 className="text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400 drop-shadow-sm">
               Code Sentinel
             </h1>
-            <h2 className="text-xl font-semibold text-gray-300 mb-3">
+            <h2 className="text-xl font-semibold text-gray-200 mb-4">
               AI-Powered Code Review
             </h2>
             <p className="text-gray-400 max-w-xl mx-auto">
@@ -161,10 +167,10 @@ export default function DashboardPage() {
           )}
 
           {stage === "polling" && (
-            <div className="card flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20
-                              flex items-center justify-center mb-4 animate-pulse-slow">
-                <Shield className="w-8 h-8 text-brand-500" />
+            <div className="card flex flex-col items-center justify-center py-24 text-center">
+              <div className="w-20 h-20 rounded-3xl bg-brand-500/10 border border-brand-500/30
+                              flex items-center justify-center mb-6 animate-pulse-glow">
+                <Shield className="w-10 h-10 text-brand-400" />
               </div>
               <p className="text-gray-300 font-medium">Agents are working…</p>
               <p className="text-gray-600 text-sm mt-1">
