@@ -40,25 +40,29 @@ export default function LoginPage({ params }: LoginPageProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-      {/* Background animated orbs */}
+      {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand-600/20 rounded-full blur-[120px] animate-float opacity-50" />
-        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[100px] animate-float opacity-40" style={{ animationDelay: "2s" }} />
+        <div
+          className="
+            absolute top-1/4 left-1/2 -translate-x-1/2
+            w-[600px] h-[600px]
+            bg-brand-500/10 rounded-full blur-3xl
+          "
+        />
       </div>
 
-      <div className="w-full max-w-md relative z-10 animate-fade-in">
+      <div className="w-full max-w-md relative z-10">
         {/* Logo */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <div
             className="
               inline-flex items-center justify-center
-              w-20 h-20 relative
-              bg-gray-900/50 backdrop-blur-md rounded-3xl mb-6
-              border border-gray-700/50 shadow-2xl shadow-brand-500/20
+              w-16 h-16
+              bg-brand-500/20 rounded-2xl mb-4
+              border border-brand-500/30
             "
           >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-400/20 to-transparent pointer-events-none" />
-            <Shield className="w-10 h-10 text-brand-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]" />
+            <Shield className="w-8 h-8 text-brand-500" />
           </div>
 
           <h1 className="text-2xl font-bold text-white">

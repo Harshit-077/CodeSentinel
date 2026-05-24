@@ -107,15 +107,7 @@ Return ONLY valid JSON in this exact schema:
             )
 
             logger.info("BugAgent complete", job_id=job_id, issues=issue_count)
-            
-            existing_contexts = state.get("retrieved_contexts") or {}
-            return {
-                "bugs": result,
-                "retrieved_contexts": {
-                    **existing_contexts,
-                    "bug": [error_handling_ctx, logic_ctx, type_ctx, async_ctx],
-                },
-            }
+            return {"bugs": result}
 
         except Exception as e:
             error_msg = f"BugAgent failed: {str(e)}"

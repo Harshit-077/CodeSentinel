@@ -4,7 +4,6 @@ LangGraph Multi-Agent Pipeline
 START → repo → bug → security → docs → reviewer → END
 """
 
-import asyncio
 import uuid
 import os
 from langgraph.graph import StateGraph, START, END
@@ -185,19 +184,18 @@ async def run_pipeline(job_id: str):
 
             # ── Initial state ──────────────────────────────────────────────────
             initial_state: AgentState = {
-                "job_id":             job_id,
-                "source_type":        job.source_type,
-                "source_ref":         job.source_ref,
-                "structure_summary":  structure_summary,
-                "repo_summary":       None,
-                "bugs":               None,
-                "security_issues":    None,
-                "docs_suggestions":   None,
-                "final_review":       None,
-                "severity_score":     None,
-                "confidence_score":   None,
-                "errors":             [],
-                "retrieved_contexts": {},  # agents populate this for RAGAS
+                "job_id":           job_id,
+                "source_type":      job.source_type,
+                "source_ref":       job.source_ref,
+                "structure_summary": structure_summary,
+                "repo_summary":     None,
+                "bugs":             None,
+                "security_issues":  None,
+                "docs_suggestions": None,
+                "final_review":     None,
+                "severity_score":   None,
+                "confidence_score": None,
+                "errors":           [],
             }
 
             # ── LangGraph ──────────────────────────────────────────────────────
@@ -208,11 +206,6 @@ async def run_pipeline(job_id: str):
             # ── Save report + generate PDF ─────────────────────────────────────
             await _save_report(db, job_id, final_state)
             logger.info("Pipeline complete", job_id=job_id)
-
-            # ── Fire evaluation as background task (non-blocking) ──────────────
-            from app.services.evaluation.orchestrator import run_evaluation
-            asyncio.create_task(run_evaluation(job_id, dict(final_state)))
-            logger.info("Evaluation task scheduled", job_id=job_id)
 
         except Exception as e:
             logger.error("Pipeline failed", job_id=job_id, error=str(e), exc_info=True)

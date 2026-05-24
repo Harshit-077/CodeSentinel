@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, Text, Integer, Float, DateTime, ForeignKey
+from sqlalchemy import String, Text, Integer, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
@@ -37,9 +37,6 @@ class Job(Base):
     report: Mapped["Report"] = relationship("Report", back_populates="job", uselist=False)
     logs: Mapped[list["AgentLog"]] = relationship(
         "AgentLog", back_populates="job", order_by="AgentLog.created_at"
-    )
-    evaluation: Mapped["EvaluationResult"] = relationship(
-        "EvaluationResult", back_populates="job", uselist=False
     )
 
 
@@ -96,63 +93,3 @@ class AgentLog(Base):
 
     # Relationship
     job: Mapped["Job"] = relationship("Job", back_populates="logs")
-
-
-class EvaluationResult(Base):
-    """
-    Stores RAGAS-style RAG quality metrics and LLM-as-a-Judge scores
-    for a completed analysis job.
-
-    ragas_scores structure:
-    {
-      "<agent_name>": {
-        "faithfulness": 0.0-1.0,
-        "answer_relevancy": 0.0-1.0,
-        "context_utilisation": 0.0-1.0
-      },
-      ...
-    }
-
-    judge_scores structure:
-    {
-      "accuracy": { "score": 0-10, "rationale": "..." },
-      "completeness": { "score": 0-10, "rationale": "..." },
-      "actionability": { "score": 0-10, "rationale": "..." },
-      "clarity": { "score": 0-10, "rationale": "..." },
-      "severity_calibration": { "score": 0-10, "rationale": "..." }
-    }
-    """
-
-    __tablename__ = "evaluation_results"
-
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    job_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("jobs.id"), nullable=False, unique=True
-    )
-
-    # RAGAS-style metrics per agent
-    ragas_scores: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-
-    # LLM-as-a-Judge scores
-    judge_scores: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-
-    # Weighted aggregate (0.0 – 10.0)
-    overall_eval_score: Mapped[float | None] = mapped_column(Float, nullable=True)
-
-    # pending | running | done | failed
-    status: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="pending"
-    )
-    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, onupdate=utcnow
-    )
-
-    # Relationship
-    job: Mapped["Job"] = relationship("Job", back_populates="evaluation")

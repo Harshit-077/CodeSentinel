@@ -112,39 +112,6 @@ export interface Report {
   created_at: string;
 }
 
-export interface RagasAgentScores {
-  faithfulness: number;        // 0.0 – 1.0
-  answer_relevancy: number;    // 0.0 – 1.0
-  context_utilisation: number; // 0.0 – 1.0
-}
-
-export interface JudgeCriterion {
-  score: number;     // 0 – 10
-  rationale: string;
-}
-
-export interface JudgeScores {
-  accuracy: JudgeCriterion;
-  completeness: JudgeCriterion;
-  actionability: JudgeCriterion;
-  clarity: JudgeCriterion;
-  severity_calibration: JudgeCriterion;
-  overall_score: number; // 0.0 – 10.0
-  summary: string;
-}
-
-export interface EvaluationResult {
-  id: string;
-  job_id: string;
-  status: "pending" | "running" | "done" | "failed";
-  ragas_scores: Record<string, RagasAgentScores> | null;
-  judge_scores: JudgeScores | null;
-  overall_eval_score: number | null;
-  error_message: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 // ── Token helpers ──────────────────────────────────────────────────────────────
 
 export const saveToken = (token: string) =>
@@ -221,27 +188,4 @@ export async function getReport(reportId: string): Promise<Report> {
 export function getPdfUrl(reportId: string): string {
   const token = getToken();
   return `${API_URL}/api/reports/${reportId}/pdf?token=${token}`;
-}
-
-/**
- * Fetch evaluation results for a job.
- * Returns null if evaluation is still running (202) or not found (404).
- * Returns EvaluationResult when done (200).
- */
-export async function getEvaluation(
-  jobId: string
-): Promise<EvaluationResult | null> {
-  const token = getToken();
-  if (!token) throw new Error("Not authenticated");
-
-  const res = await fetch(`${API_URL}/api/evaluation/${jobId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  if (res.status === 404 || res.status === 202) return null;
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `API error ${res.status}`);
-  }
-  return res.json() as Promise<EvaluationResult>;
 }

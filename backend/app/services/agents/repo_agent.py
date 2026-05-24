@@ -97,15 +97,7 @@ Return ONLY valid JSON in this exact schema:
             )
 
             logger.info("RepoAgent complete", job_id=job_id, project=result.get("project_name"))
-            
-            existing_contexts = state.get("retrieved_contexts") or {}
-            return {
-                "repo_summary": result,
-                "retrieved_contexts": {
-                    **existing_contexts,
-                    "repo": [config_context, entry_context, readme_context],
-                },
-            }
+            return {"repo_summary": result}
 
         except Exception as e:
             error_msg = f"RepoAgent failed: {str(e)}"
