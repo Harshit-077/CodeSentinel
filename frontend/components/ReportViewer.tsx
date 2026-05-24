@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { type Report } from "@/lib/api";
 import { SeverityBadge } from "./SeverityBadge";
+import { EvaluationPanel } from "./EvaluationPanel";
 import {
   Bug, Shield, BookOpen, Star,
-  AlertTriangle, CheckCircle2, TrendingUp, FileText,
+  AlertTriangle, CheckCircle2, TrendingUp, FileText, FlaskConical,
 } from "lucide-react";
 
 interface Props { report: Report }
@@ -16,6 +17,7 @@ const TABS = [
   { key: "security",  label: "Security",  icon: Shield },
   { key: "docs",      label: "Docs",      icon: BookOpen },
   { key: "actions",   label: "Action Items", icon: TrendingUp },
+  { key: "evaluation", label: "Evaluation",  icon: FlaskConical },
 ] as const;
 
 type Tab = typeof TABS[number]["key"];
@@ -292,6 +294,11 @@ export function ReportViewer({ report }: Props) {
               </div>
             ))}
         </div>
+      )}
+
+      {/* ── Evaluation Tab ── */}
+      {tab === "evaluation" && (
+        <EvaluationPanel jobId={report.job_id} />
       )}
     </div>
   );

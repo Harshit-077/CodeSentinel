@@ -7,6 +7,9 @@ from app.config import get_settings
 from app.database import create_tables
 from app.utils.logger import setup_logging, get_logger
 from app.routers import upload, jobs, reports, auth
+from app.routers import evaluation
+# Explicit model imports ensure SQLAlchemy sees all tables before create_tables()
+from app.models.job import Job, Report, AgentLog, EvaluationResult  # noqa: F401
 
 settings = get_settings()
 logger = get_logger(__name__)
@@ -54,6 +57,7 @@ app.include_router(auth.router)
 app.include_router(upload.router)
 app.include_router(jobs.router)
 app.include_router(reports.router)
+app.include_router(evaluation.router)
 
 
 # ── Health check ──────────────────────────────────────────────────────────────
