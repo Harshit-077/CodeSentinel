@@ -1,20 +1,15 @@
 """
-backend/app/models/evaluation.py
+backend/app/models/evaluation_model.py
 
-Add this file and import EvaluationResult in app/models/job.py
-(or add it directly to job.py).
-
-Also add to database.py:
-    from app.models.evaluation import EvaluationResult  # noqa: F401
-    # so Alembic / create_all picks it up
+EvaluationResult ORM model — stores per-job RAGAS scores.
+Uses the shared Base from app.database so the table is created by create_tables().
 """
 
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()  # import your existing Base instead
+from app.database import Base
 
 
 class EvaluationResult(Base):  # type: ignore[valid-type]

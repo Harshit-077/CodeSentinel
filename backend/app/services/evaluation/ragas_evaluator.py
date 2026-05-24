@@ -21,7 +21,7 @@ from uuid import UUID
 
 from datasets import Dataset
 from langchain_groq import ChatGroq
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from ragas import evaluate
 from ragas.metrics import (
     answer_relevancy,
@@ -31,8 +31,8 @@ from ragas.metrics import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import settings
-from app.models.job import EvaluationResult  # new ORM model (see models patch below)
+from app.config import get_settings
+from app.models.evaluation_model import EvaluationResult  # ORM model
 
 logger = logging.getLogger(__name__)
 
@@ -81,10 +81,11 @@ class RAGASEvaluator:
     """
 
     def __init__(self) -> None:
+        _settings = get_settings()
         # Reuse Groq LLM already configured in the project
         self._llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
-            api_key=settings.GROQ_API_KEY,
+            model=_settings.groq_model,
+            api_key=_settings.groq_api_key,
             temperature=0,
         )
         # Reuse the same embedding model used for ChromaDB

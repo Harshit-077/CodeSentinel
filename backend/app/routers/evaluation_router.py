@@ -17,7 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.evaluation import EvaluationResult
+from app.models.evaluation_model import EvaluationResult
 from app.models.job import Job, AgentLog          # existing ORM models
 from app.services.evaluation.ragas_evaluator import (
     RAGASEvaluator,
@@ -25,7 +25,7 @@ from app.services.evaluation.ragas_evaluator import (
     RAGASReport,
     get_ragas_evaluator,
 )
-from app.utils.auth import get_current_user
+from app.utils.auth import verify_token
 
 router = APIRouter()
 
@@ -83,7 +83,7 @@ async def run_evaluation(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     evaluator: RAGASEvaluator = Depends(get_ragas_evaluator),
-    _user=Depends(get_current_user),
+    _user=Depends(verify_token),
 ):
     """
     Triggers RAGAS evaluation in the background for the given completed job.
@@ -121,7 +121,7 @@ async def run_evaluation(
 async def get_evaluation(
     job_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _user=Depends(get_current_user),
+    _user=Depends(verify_token),
 ):
     """Returns stored RAGAS scores for the given job, or 404 if not yet run."""
     result = await db.execute(
