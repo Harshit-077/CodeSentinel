@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { CheckCircle2, XCircle, Loader2, Clock } from "lucide-react";
 import { getJobStatus, type JobStatus, type AgentLog } from "@/lib/api";
 
@@ -40,26 +40,46 @@ export function AgentTimeline({ jobId, onComplete, onFailed }: Props) {
   const [job, setJob] = useState<JobStatus | null>(null);
   const [error, setError] = useState("");
 
-  const poll = useCallback(async () => {
-    try {
-      const data = await getJobStatus(jobId);
-      setJob(data);
+  // Stable refs so the interval never restarts when parent re-renders
+  const onCompleteRef = useRef(onComplete);
+  const onFailedRef   = useRef(onFailed);
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+  useEffect(() => { onFailedRef.current   = onFailed;   }, [onFailed]);
 
-      if (data.status === "done" && data.report_id) {
-        onComplete(data.report_id);
-      } else if (data.status === "failed") {
-        onFailed();
-      }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to fetch status");
-    }
-  }, [jobId, onComplete, onFailed]);
+  const isTerminal = useRef(false);
 
   useEffect(() => {
+    // Reset terminal flag when jobId changes
+    isTerminal.current = false;
+
+    async function poll() {
+      if (isTerminal.current) return;
+      try {
+        const data = await getJobStatus(jobId);
+        setJob(data);
+
+        if (data.status === "done" && data.report_id) {
+          isTerminal.current = true;
+          onCompleteRef.current(data.report_id);
+        } else if (data.status === "failed") {
+          isTerminal.current = true;
+          onFailedRef.current();
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to fetch status");
+      }
+    }
+
     poll();
-    const interval = setInterval(poll, 3000);
+    const interval = setInterval(() => {
+      if (isTerminal.current) {
+        clearInterval(interval);
+        return;
+      }
+      poll();
+    }, 3000);
     return () => clearInterval(interval);
-  }, [poll]);
+  }, [jobId]); // ← only jobId; callbacks accessed via stable refs
 
   if (error) return (
     <div className="card text-red-400 text-sm">{error}</div>
